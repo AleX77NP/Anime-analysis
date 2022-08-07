@@ -1,4 +1,6 @@
 import org.apache.spark.sql.SparkSession
+import org.apache.spark
+
 
 object Main {
 
@@ -9,6 +11,8 @@ object Main {
       .appName("Anime_Analysis")
       .master("local[*]")
       .getOrCreate()
+
+    import spark.implicits._
 
     val animeDF = spark.read
       .option("header", "true")
@@ -34,5 +38,15 @@ object Main {
     // top 10 best rated animes of all time
     val topRatedAnimeDF = spark.sql("SELECT name, rating FROM ANIME WHERE rating > 9 AND type = 'TV' ")
     topRatedAnimeDF.show(10)
+
+    // covert DF to Array of Anime type objects
+    val animeList = animeDF
+      .withColumnRenamed("type", "showType")
+      .withColumnRenamed("anime_id", "animeId")
+      .as[Anime]
+      .take(10)
+
+    animeList.foreach(println)
+
   }
 }
